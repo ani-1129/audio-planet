@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Equipment {
+  id          String   @id @default(cuid())
+  name        String
+  category    Category
+  description String?
+  power       String?
+  weight      String?
+  dailyRate   Float
+  totalQty    Int      @default(1)
+  isAvailable Boolean  @default(true)
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  BookingItem BookingItem[]
+}
+
+enum Category {
+  AUDIO
+  LIGHTING
+  TRUSSING
+  PACKAGE
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  eventStartDate  DateTime
+  eventEndDate    DateTime
+  eventLocation   String
+  serviceLevel    ServiceLevel
+  totalAmount     Float
+  status          BookingStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items           BookingItem[]
+}
+
+enum ServiceLevel {
+  DELIVERY_ONLY
+  DELIVERY_SETUP
+  FULL_SERVICE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model BookingItem {
+  id          String    @id @default(cuid())
+  bookingId   String
+  equipmentId String
+  quantity    Int
+  priceAtBook Float
+
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+}

@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Audioplanet Web
 
-## Getting Started
+Audioplanet is a premium audio, lighting, and truss rental service for live events based in Delhi NCR. This repository contains the source code for the official Audioplanet website.
 
-First, run the development server:
+## 🚀 About The Website
+
+The Audioplanet website is designed to provide customers with an intuitive and seamless experience for browsing rental inventory and booking equipment for their live events. 
+
+### Key Functionalities
+
+- **Inventory Browsing**: Users can explore a comprehensive catalog of premium audio gear, stage lighting, and truss structures.
+- **Quote & Booking System**: Customers can request custom quotes and book equipment for their specific event dates. The system handles pricing logic including delivery fees, setup fees, and staffing (engineers).
+- **Admin Dashboard**: A dedicated secure area for staff to manage bookings, inventory, and users.
+- **Interactive 3D Elements**: Uses Three.js to provide interactive and engaging 3D visuals of equipment or stage setups.
+- **Location & Logistics**: Integrated Mapbox for precise delivery locations and calculating logistics costs within the Delhi NCR region.
+- **Authentication**: Secure login system for administrators and potentially customers to manage their bookings.
+
+## 🛠️ Technology Stack
+
+The project is built using modern web technologies to ensure a fast, responsive, and maintainable application:
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Frontend Library**: [React 19](https://react.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
+- **Database ORM**: [Prisma](https://www.prisma.io/)
+- **3D Graphics**: [Three.js](https://threejs.org/) & [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber/getting-started/introduction)
+- **Maps**: [@mapbox/search-js-react](https://docs.mapbox.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+## 📦 Getting Started
+
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📞 Contact Information
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Phone**: +91 8381951053
+- **Support**: support@audioplanet.in
+- **Sales/Bookings**: bookings@audioplanet.in
+- **Warehouse**: Plot 14, Sector 63, Noida, Uttar Pradesh, India
