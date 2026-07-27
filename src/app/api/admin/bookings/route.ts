@@ -1,53 +1,52 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 // Force dynamic rendering — prevents Next.js from caching this route
 export const dynamic = 'force-dynamic';
 
-function parseCSV(csvText: string) {
-  const lines = csvText.trim().split('\n');
-  if (lines.length === 0) return [];
-  
-  const headers = lines[0].split(',');
-  const results = [];
-  
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue; // skip empty lines
-    
-    // Basic regex to handle commas inside quotes
-    const row = lines[i].match(/(\".*?\"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-    
-    // Clean up quotes
-    const cleanedRow = row.map(val => val.replace(/^"|"$/g, '').replace(/""/g, '"'));
-    
-    const obj: any = {};
-    headers.forEach((header, index) => {
-      obj[header.trim()] = cleanedRow[index] || '';
-    });
-    results.push(obj);
-  }
-  
-  return results;
-}
-
 export async function GET(request: Request) {
   try {
-    const csvFilePath = path.join(process.cwd(), 'bookings_database.csv');
-    
-    if (!fs.existsSync(csvFilePath)) {
-      return NextResponse.json({ success: true, data: [] });
+    const bookings = await db.booking.findMany({
+      include: {
+        items: {
+          include: {
+            equipment: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    // Flatten bookings to match original CSV structure: one row per item
+    const flattened = [];
+    for (const b of bookings) {
+      let serviceTier = 'Delivery Only';
+      if (b.serviceLevel === 'DELIVERY_SETUP') serviceTier = 'Delivery + Setup';
+      else if (b.serviceLevel === 'FULL_SERVICE') serviceTier = 'Full Service';
+
+      for (const item of b.items) {
+        flattened.push({
+          Timestamp: b.createdAt.toISOString(),
+          BookingId: b.id,
+          Item: item.equipment.name,
+          Quantity: String(item.quantity),
+          StartDate: b.eventStartDate.toISOString(),
+          EndDate: b.eventEndDate.toISOString(),
+          Location: b.eventLocation,
+          ServiceTier: serviceTier,
+          FullName: b.customerName,
+          Email: b.customerEmail,
+          Phone: b.customerPhone,
+          TotalAmount: String(b.totalAmount)
+        });
+      }
     }
-    
-    const csvData = fs.readFileSync(csvFilePath, 'utf8');
-    const parsedData = parseCSV(csvData);
-    
-    // Sort by most recent first
-    parsedData.reverse();
-    
-    return NextResponse.json({ success: true, data: parsedData });
+
+    return NextResponse.json({ success: true, data: flattened });
   } catch (error) {
-    console.error('Failed to read CSV:', error);
+    console.error('Failed to query bookings:', error);
     return NextResponse.json({ success: false, error: 'Failed to read bookings' }, { status: 500 });
   }
 }
@@ -55,55 +54,45 @@ export async function GET(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { bookingId, timestamp, password } = await request.json();
-    
-    // Different password for cancellation
     const CANCELLATION_PASSWORD = "canceladmin";
 
     if (password !== CANCELLATION_PASSWORD) {
       return NextResponse.json({ success: false, error: 'Invalid cancellation password' }, { status: 401 });
     }
 
-    const csvFilePath = path.join(process.cwd(), 'bookings_database.csv');
-    if (!fs.existsSync(csvFilePath)) {
-      return NextResponse.json({ success: false, error: 'Database not found' }, { status: 404 });
+    let booking = null;
+    if (bookingId) {
+      booking = await db.booking.findUnique({
+        where: { id: bookingId }
+      });
+    } else if (timestamp) {
+      // Fallback matching by timestamp (e.g. for legacy bookings)
+      const parsedDate = new Date(timestamp);
+      booking = await db.booking.findFirst({
+        where: {
+          createdAt: {
+            gte: new Date(parsedDate.getTime() - 2000),
+            lte: new Date(parsedDate.getTime() + 2000)
+          }
+        }
+      });
     }
 
-    const csvData = fs.readFileSync(csvFilePath, 'utf8');
-    const lines = csvData.trim().split('\n');
-    if (lines.length === 0) {
-      return NextResponse.json({ success: false, error: 'Empty database' });
+    if (!booking) {
+      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
     }
 
-    const headers = lines[0];
-    const remainingLines = [];
-    let cancelledCount = 0;
+    // Delete booking items first, then the booking
+    await db.$transaction([
+      db.bookingItem.deleteMany({
+        where: { bookingId: booking.id }
+      }),
+      db.booking.delete({
+        where: { id: booking.id }
+      })
+    ]);
 
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      
-      const row = lines[i].match(/(\".*?\"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-      const cleanedRow = row.map(val => val.replace(/^"|"$/g, '').replace(/""/g, '"'));
-      
-      const rowTimestamp = cleanedRow[0] || '';
-      const rowBookingId = cleanedRow[1] || '';
-
-      // If the row has a bookingId, match by bookingId, else fallback to matching by exact timestamp
-      const isMatch = bookingId && rowBookingId 
-        ? rowBookingId === bookingId 
-        : rowTimestamp === timestamp;
-
-      if (isMatch) {
-         cancelledCount++;
-      } else {
-         remainingLines.push(lines[i]);
-      }
-    }
-
-    if (cancelledCount > 0) {
-       fs.writeFileSync(csvFilePath, [headers, ...remainingLines].join('\n') + '\n', 'utf8');
-    }
-
-    return NextResponse.json({ success: true, message: `Cancelled ${cancelledCount} items in booking` });
+    return NextResponse.json({ success: true, message: 'Cancelled booking successfully' });
   } catch (error) {
     console.error('Failed to cancel booking:', error);
     return NextResponse.json({ success: false, error: 'Failed to cancel booking' }, { status: 500 });

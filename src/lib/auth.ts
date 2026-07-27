@@ -1,12 +1,8 @@
-// Simple local auth utilities — no external services
-// Uses a JSON file as the user store and a cookie-based session token
-
-import fs from 'fs';
-import path from 'path';
+// Database-backed auth utilities using Prisma
+import { db } from './db';
 import crypto from 'crypto';
 
-const USERS_FILE = path.join(process.cwd(), 'users_database.json');
-const SESSION_SECRET = 'audioplanet-session-secret-2026'; // In production use env var
+const SESSION_SECRET = process.env.SESSION_SECRET || 'audioplanet-session-secret-2026';
 
 export interface UserRecord {
   id: string;
@@ -14,7 +10,7 @@ export interface UserRecord {
   email: string;
   phone: string;
   passwordHash: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 function hashPassword(password: string): string {
@@ -25,47 +21,33 @@ export function verifyPassword(password: string, hash: string): boolean {
   return hashPassword(password) === hash;
 }
 
-function readUsers(): UserRecord[] {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  try {
-    const data = fs.readFileSync(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+export async function findUserByEmail(email: string): Promise<UserRecord | null> {
+  return await db.user.findUnique({
+    where: { email: email.toLowerCase() }
+  });
 }
 
-function writeUsers(users: UserRecord[]): void {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
+export async function findUserById(id: string): Promise<UserRecord | null> {
+  return await db.user.findUnique({
+    where: { id }
+  });
 }
 
-export function findUserByEmail(email: string): UserRecord | undefined {
-  return readUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
-}
-
-export function findUserById(id: string): UserRecord | undefined {
-  return readUsers().find(u => u.id === id);
-}
-
-export function createUser(fullName: string, email: string, phone: string, password: string): UserRecord {
-  const users = readUsers();
-  
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+export async function createUser(fullName: string, email: string, phone: string, password: string): Promise<UserRecord> {
+  // Check if user exists
+  const existing = await findUserByEmail(email);
+  if (existing) {
     throw new Error('An account with this email already exists.');
   }
-  
-  const user: UserRecord = {
-    id: crypto.randomUUID(),
-    fullName,
-    email: email.toLowerCase(),
-    phone,
-    passwordHash: hashPassword(password),
-    createdAt: new Date().toISOString(),
-  };
-  
-  users.push(user);
-  writeUsers(users);
-  return user;
+
+  return await db.user.create({
+    data: {
+      fullName,
+      email: email.toLowerCase(),
+      phone,
+      passwordHash: hashPassword(password)
+    }
+  });
 }
 
 // Session token: simple signed token = base64(userId) + "." + hmac

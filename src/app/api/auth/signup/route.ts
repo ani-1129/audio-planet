@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
     
     try {
-      const user = createUser(fullName.trim(), email.trim(), phone.trim(), password);
+      const user = await createUser(fullName.trim(), email.trim(), phone.trim(), password);
       const token = createSessionToken(user.id);
       
       const response = NextResponse.json({

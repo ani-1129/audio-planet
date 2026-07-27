@@ -18,7 +18,7 @@ export async function GET() {
       return NextResponse.json({ authenticated: false });
     }
     
-    const user = findUserById(userId);
+    const user = await findUserById(userId);
     if (!user) {
       return NextResponse.json({ authenticated: false });
     }

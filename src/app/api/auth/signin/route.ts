@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Email and password are required.' }, { status: 400 });
     }
     
-    const user = findUserByEmail(email.trim());
+    const user = await findUserByEmail(email.trim());
     
     if (!user) {
       return NextResponse.json({ success: false, error: 'No account found with this email. Please sign up first.' }, { status: 401 });
