@@ -24,7 +24,7 @@ export default function ContactPage() {
 *Message:*
 ${formData.message}`;
     
-    const waUrl = `https://wa.me/918381951053?text=${encodeURIComponent(waText)}`;
+    const waUrl = `https://wa.me/919999999999?text=${encodeURIComponent(waText)}`;
     window.open(waUrl, '_blank');
   };
 

@@ -2,7 +2,7 @@ export const companyInfo = {
   name: 'Audioplanet',
   tagline: 'Premium audio, lighting, and truss rental for live events.',
   contact: {
-    phone: '+91 8381951053',
+    phone: '+91 99999 99999',
     supportEmail: 'support@audioplanet.in',
     salesEmail: 'bookings@audioplanet.in',
     warehouseAddress: 'Plot 14, Sector 63, Noida, Uttar Pradesh, India',

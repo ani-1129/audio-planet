@@ -1,10 +1,14 @@
 # Audioplanet Web
 
-Audioplanet is a premium audio, lighting, and truss rental service for live events based in Delhi NCR. This repository contains the source code for the official Audioplanet website.
+Audioplanet is a premium audio, lighting, and truss rental service for live events based in Delhi NCR.
+
+**Live URL**: [https://audio-planet.vercel.app/](https://audio-planet.vercel.app/)
 
 ## 🚀 About The Website
 
-The Audioplanet website is designed to provide customers with an intuitive and seamless experience for browsing rental inventory and booking equipment for their live events. 
+The Audioplanet website is designed to provide customers with an intuitive and seamless experience for browsing rental inventory and booking equipment for their live events.
+
+![Audioplanet Web Showcase](audioplanet_demo.webp)
 
 ### Key Functionalities
 
@@ -46,7 +50,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 📞 Contact Information
 
-- **Phone**: +91 8381951053
+- **Phone**: +91 99999 99999
 - **Support**: support@audioplanet.in
 - **Sales/Bookings**: bookings@audioplanet.in
 - **Warehouse**: Plot 14, Sector 63, Noida, Uttar Pradesh, India
