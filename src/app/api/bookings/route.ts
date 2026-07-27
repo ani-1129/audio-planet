@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { inventory } from '@/data/inventory';
+import { BookingItem } from '@prisma/client';
 
 // Force dynamic rendering — prevents Next.js from caching this route
 export const dynamic = 'force-dynamic';
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       // Check sum of quantities booked during the overlapping interval
       let totalBookedQty = 0;
       for (const ob of overlappingBookings) {
-        const matchingItem = ob.items.find(obItem => obItem.equipmentId === dbEquipment!.id);
+        const matchingItem = ob.items.find((obItem: BookingItem) => obItem.equipmentId === dbEquipment!.id);
         if (matchingItem) {
           totalBookedQty += matchingItem.quantity;
         }
